@@ -4,15 +4,17 @@ import { z } from "zod";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import SendMailtoOtp from "../utils/sendmail.js";
+import bcrypt from "bcrypt";
 const router = express.Router();
+
 
 router.post("/send-otp", async (req, res, next) => {
     try {
         // Validate input
         const userSchema = z.object({
-            name: z.string().min(3),
+            username: z.string().min(6),
             email: z.string().email(),
-            password: z.string().min(8),
+            password: z.string().min(6),
             role: z.enum(["coach", "student"]),
         });
         const uservalidation = userSchema.parse(req.body);
@@ -64,7 +66,34 @@ router.post('/verify-otp', async (req, res, next) => {
     }
 });
 
-
+router.post('/login', async (req, res) => {
+    try {
+        const userSchema = z.object({
+            username: z.string().min(6),
+            email: z.string().email(),
+            password: z.string().min(6),
+        });
+        const uservalidation = userSchema.parse(req.body);
+        const user = await User.findOne({ email: uservalidation.email });
+        if (!user) {return res.status(400).json({ message: "User not found, please register" });}
+        if(!user.isverified) res.status(400).json({message:'user not verified'})
+        const isMatch = await bcrypt.compare(uservalidation.password, user.password);
+        if (!isMatch) { return res.status(401).json({ message: "Invalid credentials" });}
+        const token = jwt.sign(
+            { _id: user._id, email: user.email, role: user.role },
+            process.env.SECRET,
+            { expiresIn: "2h" }
+        );
+        res.cookie('token', token, {
+            httpOnly: true,
+            sameSite: 'strict',
+            secure: process.env.NODE_ENV === 'production'
+        });
+        return res.status(200).json({ message: "Login successful", token });
+    } catch (error) {
+        return res.status(500).json({ message: error.message || "Internal server error" });
+    }
+});
 
 
 
