@@ -25,5 +25,9 @@
     "mongoose": "^8.16.2",
     "nodemon": "^3.1.10",
     "zod": "^3.25.76"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.1.0"
   }
 }
