@@ -2,9 +2,9 @@
   "name": "findcoacheapi",
   "version": "1.0.0",
   "description": "FindCoacheApi",
-  "main": "app.js",
+  "main": "server.js",
   "scripts": {
-    "dev": "nodemon app.js"
+    "dev": "nodemon server.js"
   },
   "repository": {
     "type": "git",
