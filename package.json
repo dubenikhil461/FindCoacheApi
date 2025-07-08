@@ -29,6 +29,7 @@
     "zod": "^3.25.76"
   },
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "dotenv": "^17.1.0"
   }

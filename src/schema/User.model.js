@@ -1,3 +1,4 @@
+import { genSalt } from "bcrypt";
 import mongoose from "mongoose";
 const { SchemaTypes: ST } = mongoose;
 const userSchema = new mongoose.Schema({
@@ -12,6 +13,16 @@ const userSchema = new mongoose.Schema({
     timestamps: true,
   }
 );
+
+userSchema.pre('save', async function (next) {
+  try {
+    if (!this.password) return next();
+     this.password = await bcyrpt.hash(this.password,await genSalt(10))
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
 
 const User = mongoose.model("User", userSchema);
 
