@@ -1,0 +1,29 @@
+{
+  "name": "findcoacheapi",
+  "version": "1.0.0",
+  "description": "FindCoacheApi",
+  "main": "app.js",
+  "scripts": {
+    "dev": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dubenikhil461/FindCoacheApi.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/dubenikhil461/FindCoacheApi/issues"
+  },
+  "homepage": "https://github.com/dubenikhil461/FindCoacheApi#readme",
+  "devDependencies": {
+    "axios": "^1.10.0",
+    "express": "^5.1.0",
+    "mongodb": "^6.17.0",
+    "mongoose": "^8.16.2",
+    "nodemon": "^3.1.10",
+    "zod": "^3.25.76"
+  }
+}
