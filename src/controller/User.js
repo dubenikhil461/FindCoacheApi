@@ -75,10 +75,10 @@ router.post('/login', async (req, res) => {
         });
         const uservalidation = userSchema.parse(req.body);
         const user = await User.findOne({ email: uservalidation.email });
-        if (!user) {return res.status(400).json({ message: "User not found, please register" });}
-        if(!user.isverified) res.status(400).json({message:'user not verified'})
+        if (!user) { return res.status(400).json({ message: "User not found, please register" }); }
+        if (!user.isverified) res.status(400).json({ message: 'user not verified' })
         const isMatch = await bcrypt.compare(uservalidation.password, user.password);
-        if (!isMatch) { return res.status(401).json({ message: "Invalid credentials" });}
+        if (!isMatch) { return res.status(401).json({ message: "Invalid credentials" }); }
         const token = jwt.sign(
             { _id: user._id, email: user.email, role: user.role },
             process.env.SECRET,
@@ -95,6 +95,13 @@ router.post('/login', async (req, res) => {
     }
 });
 
-
+router.post('/logout', async (req, res) => {
+    res.clearCookie('token', token, {
+        httpOnly: true,
+        sameSite: 'strict',
+        secure: true
+    })
+    res.status(200).json({message : "logout successfully"})
+})
 
 export default router;
