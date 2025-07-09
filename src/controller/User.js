@@ -42,7 +42,7 @@ router.post("/send-otp", async (req, res, next) => {
     }
 });
 
-router.post('/verify-otp', async (req, res, next) => {
+router.post('/register', async (req, res, next) => {
     try {
         const ValidateOtp = z.object({
             email: z.string().email(),
