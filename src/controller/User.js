@@ -1,5 +1,5 @@
 import express from "express";
-import User from "../models/User.model.js";
+import User from "../schema/User.model.js";
 import { z } from "zod";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
@@ -8,13 +8,13 @@ import bcrypt from "bcrypt";
 const router = express.Router();
 
 
-router.post("/send-otp", async (req, res, next) => {
+router.post("/register", async (req, res, next) => {
     try {
         // Validate input
         const userSchema = z.object({
-            username: z.string().min(6),
+            username: z.string().min(1),
             email: z.string().email(),
-            password: z.string().min(6),
+            password: z.string().min(1),
             role: z.enum(["coach", "student"]),
         });
         const uservalidation = userSchema.parse(req.body);
@@ -30,23 +30,25 @@ router.post("/send-otp", async (req, res, next) => {
         const mailResult = await SendMailtoOtp(uservalidation.email, newotp);
         if (!mailResult.success) { return res.status(500).json({ message: "Failed to send OTP", error: mailResult.error }); }
 
-        const user = await User.create({
+       await User.create({
             ...uservalidation,
             otp: newotp,
             otpExpiry: Date.now() + 10 * 60 * 1000 // Fixed typo: should be otpExpiry
         });
-        return res.status(200).json({ message: 'OTP sent successfully', data: user });
+        return res.status(200).json({ message: 'OTP sent successfully', data: {
+            email: uservalidation.email,
+        }});
     }
     catch (error) {
-        return res.status(500).json({ message: error.message || "Internal server error" });
+        return res.status(500).json({ message: error.message || "Internal server error"});
     }
 });
 
-router.post('/register', async (req, res, next) => {
+router.post('/verify-otp', async (req, res, next) => {
     try {
         const ValidateOtp = z.object({
             email: z.string().email(),
-            otp: z.number().min(6).max(6)
+            otp: z.string().min(6).max(6)
         });
         const uservalidation = ValidateOtp.parse(req.body);
 
@@ -60,7 +62,7 @@ router.post('/register', async (req, res, next) => {
         user.otp = null;
         user.otpExpiry = null;
         await user.save();
-        return res.status(200).json({ message: 'OTP verified successfully' });
+        return res.status(200).json({ message: 'OTP verified successfully'});
     } catch (error) {
         return res.status(500).json({ message: error.message || "Internal server error" });
     }
@@ -69,9 +71,9 @@ router.post('/register', async (req, res, next) => {
 router.post('/login', async (req, res) => {
     try {
         const userSchema = z.object({
-            username: z.string().min(6),
+            username: z.string().min(1),
             email: z.string().email(),
-            password: z.string().min(6),
+            password: z.string().min(1),
         });
         const uservalidation = userSchema.parse(req.body);
         const user = await User.findOne({ email: uservalidation.email });
@@ -81,7 +83,7 @@ router.post('/login', async (req, res) => {
         if (!isMatch) { return res.status(401).json({ message: "Invalid credentials" }); }
         const token = jwt.sign(
             { _id: user._id, email: user.email, role: user.role },
-            process.env.SECRET,
+            process.env.SECRET_KEY,
             { expiresIn: "2h" }
         );
         res.cookie('token', token, {
@@ -89,8 +91,18 @@ router.post('/login', async (req, res) => {
             sameSite: 'strict',
             secure: process.env.NODE_ENV === 'production'
         });
-        return res.status(200).json({ message: "Login successful", token });
+        return res.status(200).json({ 
+            message: "Login successful", 
+            token, 
+            data: {
+                _id: user._id,
+                email: user.email,
+                username: user.username,
+                role: user.role
+            }
+        });
     } catch (error) {
+        console.log(error);
         return res.status(500).json({ message: error.message || "Internal server error" });
     }
 });

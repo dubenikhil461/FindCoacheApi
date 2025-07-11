@@ -7,9 +7,9 @@ const userSchema = new mongoose.Schema(
     username: { type: ST.String, required: true },
     email: { type: ST.String, required: true, unique: true },
     password: { type: ST.String, required: true },
-    role: { type: ST.String, enum: ["coach", "student", "admin"], required: true },
+    role: { type: ST.String, enum: ["coach", "student"], required: true },
     isverified: { type: ST.Boolean, default: false },
-    otp: { type: ST.Number, required: true },
+    otp: { type: ST.String, required: false,default:null },
     otpExpiry: { type: ST.Date }
   },
   {
